@@ -54,13 +54,12 @@
           <button @click="editButton">수정</button>
         </div>
       </div>
-      <!-- 수정 출력 -->
       <div class="edit" v-if="editVue">
         <input class="editTitle" type="text" v-model="editTitle" />
         <input class="editContent" type="text" v-model="editContent" />
         <div class="editButton">
           <button @click="editCloseButton">닫기</button>
-          <button @click="editPost">수정완료</button>
+          <button @click="editPost(editpostvalue)">수정완료</button>
         </div>
       </div>
     </div>
@@ -139,6 +138,7 @@
           // 게시글 선택 함수 (클릭 시 실행)
           const selectPost = (post) => {
             selectedPost.value = post;
+            editpostvalue.value = post;
             editTitle.value = post.title;
             editContent.value = post.content;
             editVue.value = null;
@@ -174,9 +174,13 @@
               return;
             }
 
-            // posts에 정보 추가
+            const newNo =
+              posts.value.length > 0
+                ? Math.max(...posts.value.map((post) => post.no)) + 1
+                : 1; // 가장 큰 no 값을 찾아서 +1
+
             posts.value.push({
-              no: posts.value.length + 1,
+              no: newNo,
               title: newPostTitle.value,
               content: newPostContent.value,
             });
@@ -186,6 +190,8 @@
             newPostContent.value = "";
             newPost.value = false;
           };
+
+          const editpostvalue = ref(null);
 
           const editTitle = ref("");
 
@@ -207,11 +213,12 @@
               alert("수정된 제목과 내용을 입력해주세요");
               return;
             }
-            // posts.value[post.no].title = editTitle.value;
-            // posts.value[post.no].content = editContent.value;
-
-            // editTitle.value = "";
-            // editContent.value = "";
+            const targetPost = posts.value.find((p) => p.no === post.no);
+            if (targetPost) {
+              targetPost.title = editTitle.value;
+              targetPost.content = editContent.value;
+            }
+            editVue.value = false;
           };
 
           return {
@@ -232,6 +239,7 @@
             editCloseButton,
             editPost,
             addPost,
+            editpostvalue,
           };
         },
       }).mount("#app");
