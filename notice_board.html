@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Vue 게시판 목록</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
   </head>
   <body>
     <div id="app">
@@ -16,13 +22,14 @@
           :key="post.no"
           @click="selectPost(post)"
         >
-          {{post.no}}.{{post.title}}
+          {{post.no}}. {{post.title}}
         </li>
       </ul>
 
       <button @click="clickNewPost">게시판 추가</button>
       <div class="plusPost" v-if="newPost">
         <input
+          class="plusTitle"
           type="text"
           placeholder="제목을 입력하세요"
           v-model="newPostTitle"
@@ -42,10 +49,21 @@
       <div class="post-content" v-if="selectedPost">
         <h3>{{selectedPost.title}}</h3>
         <p>{{selectedPost.content}}</p>
-        <button @click="closePost">닫기</button>
+        <div class="post_button">
+          <button @click="closePost">닫기</button>
+          <button @click="editButton">수정</button>
+        </div>
+      </div>
+      <!-- 수정 출력 -->
+      <div class="edit" v-if="editVue">
+        <input class="editTitle" type="text" v-model="editTitle" />
+        <input class="editContent" type="text" v-model="editContent" />
+        <div class="editButton">
+          <button @click="editCloseButton">닫기</button>
+          <button @click="editPost">수정완료</button>
+        </div>
       </div>
     </div>
-
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script>
       const { createApp, ref } = Vue;
@@ -121,16 +139,22 @@
           // 게시글 선택 함수 (클릭 시 실행)
           const selectPost = (post) => {
             selectedPost.value = post;
+            editTitle.value = post.title;
+            editContent.value = post.content;
+            editVue.value = null;
+            newPost.value = null;
             // 클릭 시 선택한 게시글을 설정하는 코드를 작성하세요
           };
 
           // 게시글 닫기 함수
           const closePost = () => {
             selectedPost.value = null;
+            editVue.value = null;
           };
 
           const clickNewPost = () => {
             newPost.value = true;
+            selectedPost.value = null;
           };
 
           const newPostclose = () => {
@@ -144,7 +168,7 @@
 
           const addPost = () => {
             // 게시글 작성 완료 여부
-            // 작성이 안된 상태로 혹인 버튼 클릭시 경고창 출력력
+            // 작성이 안된 상태로 혹인 버튼 클릭시 경고창 출력
             if (!newPostTitle.value.trim() || !newPostContent.value.trim()) {
               alert("제목과 내용을 입려해주세요");
               return;
@@ -153,14 +177,41 @@
             // posts에 정보 추가
             posts.value.push({
               no: posts.value.length + 1,
-              title: newPostContent.value,
+              title: newPostTitle.value,
               content: newPostContent.value,
             });
 
-            //입력되 게시글 추가란 초기화 및 닫기기
+            //입력되 게시글 추가란 초기화 및 닫기
             newPostTitle.value = "";
             newPostContent.value = "";
             newPost.value = false;
+          };
+
+          const editTitle = ref("");
+
+          const editContent = ref("");
+
+          const editVue = ref(false);
+
+          const editButton = () => {
+            editVue.value = true;
+            selectedPost.value = null;
+          };
+
+          const editCloseButton = () => {
+            editVue.value = false;
+          };
+
+          const editPost = (post) => {
+            if (!editTitle.value.trim() || !editContent.value.trim()) {
+              alert("수정된 제목과 내용을 입력해주세요");
+              return;
+            }
+            // posts.value[post.no].title = editTitle.value;
+            // posts.value[post.no].content = editContent.value;
+
+            // editTitle.value = "";
+            // editContent.value = "";
           };
 
           return {
@@ -171,9 +222,16 @@
             newPost,
             newPostTitle,
             newPostContent,
-            addPost,
             clickNewPost,
             newPostclose,
+            editPost,
+            editTitle,
+            editContent,
+            editVue,
+            editButton,
+            editCloseButton,
+            editPost,
+            addPost,
           };
         },
       }).mount("#app");
@@ -215,16 +273,25 @@
       button:hover {
         background: #ff4f4f;
       }
-      .plusPost {
+      .plusPost,
+      .edit {
         display: flex;
         flex-direction: column;
       }
-      .new_post_button {
+      .post_button,
+      .new_post_button,
+      .editButton {
         display: flex;
         justify-content: space-between;
       }
 
-      .plusContent {
+      .editTitle,
+      .plusTitle {
+        height: 30px;
+      }
+
+      .plusContent,
+      .editContent {
         height: 200px;
       }
     </style>
